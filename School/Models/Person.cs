@@ -1,4 +1,4 @@
-﻿namespace Schoole.Models;
+﻿namespace School.Models;
 
 public abstract class Person : EntityBase
 {

@@ -1,1 +1,2 @@
-//global using Schoole.Abstractions;
+global using School.Models;
+global using School.Data;

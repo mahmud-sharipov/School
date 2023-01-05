@@ -1,4 +1,4 @@
-﻿namespace Schoole.Models;
+﻿namespace School.Models;
 
 public class Group : EntityBase
 {

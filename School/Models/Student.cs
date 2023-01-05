@@ -1,8 +1,9 @@
-﻿namespace Schoole.Models
+﻿namespace School.Models;
+
+public class Student : Person
 {
-    public class Student : Person
-    {
-        public Guid GroupGuid { get; set; }
-        public virtual Group Group { get; set; }
-    }
+    public Guid GroupGuid { get; set; }
+    public virtual Group Group { get; set; }
+
+    public int Test { get; set; }
 }
