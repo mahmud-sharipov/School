@@ -20,6 +20,19 @@ public class SubjectsController : ControllerBase
         return await _context.Subjects.ToListAsync();
     }
 
+    [HttpGet("age-0-20/{age:int:range(0, 20)}")]
+    public ActionResult<string> GetLevel(int age)
+    {
+        return "Bachi yosh " + age;
+    }
+
+    [HttpGet("age-21-40/{age:int:range(21, 40)}")]
+    public ActionResult<string> GetLevel2(int age)
+    {
+        return "Bachi yosh " + age;
+    }
+
+
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<Subject>> GetSubject(Guid id)
     {
