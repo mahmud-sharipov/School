@@ -2,7 +2,7 @@
 
 namespace School.Data;
 
-public class SchoolContext : DbContext
+public class SchoolContext : DbContext, IContext
 {
     public SchoolContext(DbContextOptions dbContextOptions) : base(dbContextOptions) { }
 

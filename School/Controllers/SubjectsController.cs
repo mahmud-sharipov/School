@@ -20,7 +20,7 @@ public class SubjectsController : ControllerBase
         return await _context.Subjects.ToListAsync();
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("{id:guid}")]
     public async Task<ActionResult<Subject>> GetSubject(Guid id)
     {
         var subject = await _context.Subjects.FindAsync(id);
