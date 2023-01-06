@@ -25,11 +25,9 @@ public class Program
         app.UseAuthorization();
         app.MapControllers();
 
-        using (var serviceScope = app.Services.GetRequiredService<IServiceScopeFactory>().CreateScope())
-        {
-            using (var context = serviceScope.ServiceProvider.GetService<SchoolContext>())
-                context.Database.Migrate();
-        }
+        using var serviceScope = app.Services.GetRequiredService<IServiceScopeFactory>().CreateScope();
+        using var context = serviceScope.ServiceProvider.GetService<SchoolContext>();
+        context.Database.Migrate();
 
         app.Run();
     }
