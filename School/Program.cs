@@ -24,18 +24,17 @@ public class Program
             app.UseSwagger();
             app.UseSwaggerUI();
         }
-        app.UseHttpsRedirection();
-        app.UseAuthorization();
-        app.UseRouting();
-        app.MapControllers();
+        app.UseDefaultFiles();
+        app.UseStaticFiles();
         app.UseCors(x => x
               .AllowAnyOrigin()
               .AllowAnyMethod()
               .AllowAnyHeader());
-        //app.MapGet("me/info", (string id) =>
-        //{
-        //    return Results.Json("Mahdmu Sharipov | sharipov@mahmud.com");
-        //});
+        app.UseHttpsRedirection();
+        app.UseAuthorization();
+        app.UseRouting();
+        //app.MapGet("/", async (context) => await context.Response.SendFileAsync("index.html"));
+        app.MapControllers();
         using var serviceScope = app.Services.GetRequiredService<IServiceScopeFactory>().CreateScope();
         using var context = serviceScope.ServiceProvider.GetService<SchoolContext>();
         context.Database.Migrate();
