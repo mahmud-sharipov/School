@@ -1,5 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Client;
+using Newtonsoft.Json.Linq;
+using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace School.Controllers;
 
@@ -8,16 +11,26 @@ namespace School.Controllers;
 public class GroupsController : ControllerBase
 {
     private readonly SchoolContext _context;
+    private readonly IConfiguration _configuration;
+    private readonly ILogger _logger;
 
-    public GroupsController(SchoolContext context)
+    public GroupsController(SchoolContext context, IConfiguration configuration, ILogger<GroupsController> logger)
     {
         _context = context;
+        _configuration = configuration;
+        _logger = logger;
     }
 
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Group>>> GetGroups()
     {
         return await _context.Groups.ToListAsync();
+    }
+
+    [HttpGet("conf")]
+    public ActionResult<string> GetConf()
+    {
+        throw new Exception("Tu dalbayob!");
     }
 
     [HttpGet("{id}")]
@@ -58,8 +71,7 @@ public class GroupsController : ControllerBase
                 throw;
             }
         }
-
-        return NoContent();
+        return Forbid();
     }
 
     [HttpPost]

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>METANIT.COM</title>
+<style>
+td {padding:5px;}
+button{margin: 5px;}
+</style>
+</head>
+<body>
+    <h2>Список пользователей</h2>
+    <div>
+        <input type="hidden" id="subjectId" />
+        <p>
+            Имя:<br/>
+            <input id="subjectName" />
+        </p>
+        <p>
+            Возраст:<br />
+            <input id="subjectKey"/>
+        </p>
+         <p>
+            <button id="saveBtn">Сохранить</button>
+            <button id="resetBtn">Сбросить</button>
+        </p>
+    </div>
+    <table>
+        <thead><tr><th>Name</th><th>Key</th><th></th></tr></thead>
+        <tbody>
+        </tbody>
+    </table>
+  
+    <script>
+    // Получение всех пользователей
+        async function getUsers() {
+            // отправляет запрос и получаем ответ
+            const response = await fetch("https://localhost:7028/api/subjects", {
+                method: "GET",
+                headers: { "Accept": "application/json" }
+            });
+            // если запрос прошел нормально
+            if (response.ok === true) {
+                // получаем данные
+                const users = await response.json();
+                const rows = document.querySelector("tbody");
+                // добавляем полученные элементы в таблицу
+                users.forEach(user => rows.append(row(user)));
+            }
+        }
+        // Получение одного пользователя
+        async function getUser(id) {
+            const response = await fetch(`https://localhost:7028/api/subjects/${id}`, {
+                method: "GET",
+                headers: { "Accept": "application/json" }
+            });
+            if (response.ok === true) {
+                const user = await response.json();
+                document.getElementById("subjectId").value = user.guid;
+                document.getElementById("subjectName").value = user.name;
+                document.getElementById("subjectKey").value = user.key;
+            }
+            else {
+                // если произошла ошибка, получаем сообщение об ошибке
+                const error = await response.json();
+                console.log(error.message); // и выводим его на консоль
+            }
+        }
+        // Добавление пользователя
+        async function createUser(subjectName, subjectKey) {
+  
+            const response = await fetch("https://localhost:7028/api/subjects", {
+                method: "POST",
+                headers: { "Accept": "application/json", "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    name: subjectName,
+                    key: subjectKey
+                })
+            });
+            if (response.ok === true) {
+                const user = await response.json();
+                document.querySelector("tbody").append(row(user));
+            }
+            else {
+                const error = await response.json();
+                console.log(error.message);
+            }
+        }
+        // Изменение пользователя
+        async function editUser(subjectId, subjectName, subjectKey) {
+            const response = await fetch(`https://localhost:7028/api/subjects/${subjectId}`, {
+                method: "PUT",
+                headers: { "Accept": "application/json", "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    guid: subjectId,
+                    name: subjectName,
+                    key: subjectKey
+                })
+            });
+            if (response.ok === true) {
+                const subject = await response.json();
+                document.querySelector(`tr[data-rowid='${subject.guid}']`).replaceWith(row(subject));
+            }
+            else {
+                const error = await response.json();
+                console.log(error.message);
+            }
+        }
+        // Удаление пользователя
+        async function deleteUser(id) {
+            const response = await fetch(`https://localhost:7028/api/subjects/${id}`, {
+                method: "DELETE",
+                headers: { "Accept": "application/json" }
+            });
+            if (response.ok === true) {
+                const user = await response.json();
+                document.querySelector(`tr[data-rowid='${user.id}']`).remove();
+            }
+            else {
+                const error = await response.json();
+                console.log(error.message);
+            }
+        }
+  
+        // сброс данных формы после отправки
+        function reset() {
+            document.getElementById("subjectId").value = 
+            document.getElementById("subjectName").value = 
+            document.getElementById("subjectKey").value = "";
+        }
+
+        function row(subject) {
+  
+            const tr = document.createElement("tr");
+            tr.setAttribute("data-rowid", subject.guid);
+
+            const nameTd = document.createElement("td");
+            nameTd.append(subject.name);
+            tr.append(nameTd);
+
+            const ageTd = document.createElement("td");
+            ageTd.append(subject.key);
+            tr.append(ageTd);
+
+            const linksTd = document.createElement("td");
+
+            const editLink = document.createElement("button"); 
+            editLink.append("Изменить");
+            editLink.addEventListener("click", async() => await getUser(subject.guid));
+            linksTd.append(editLink);
+
+            const removeLink = document.createElement("button"); 
+            removeLink.append("Удалить");
+            removeLink.addEventListener("click", async () => await deleteUser(subject.guid));
+
+            linksTd.append(removeLink);
+            tr.appendChild(linksTd);
+
+            return tr;
+        }
+        // сброс значений формы
+        document.getElementById("resetBtn").addEventListener("click", () =>  reset());
+
+        // отправка формы
+        document.getElementById("saveBtn").addEventListener("click", async () => {
+        
+            const id = document.getElementById("subjectId").value;
+            const name = document.getElementById("subjectName").value;
+            const age = document.getElementById("subjectKey").value;
+            console.log(id);
+            if (id === "")
+                await createUser(name, age);
+            else
+                await editUser(id, name, age);
+            reset();
+        });
+
+        // загрузка пользователей
+        getUsers();
+    </script>
+</body>
+</html>

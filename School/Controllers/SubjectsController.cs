@@ -1,5 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
+using System.Buffers;
+using System.Text;
 
 namespace School.Controllers;
 
@@ -47,7 +50,7 @@ public class SubjectsController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> PutSubject(Guid id, Subject subject)
+    public async Task<ActionResult<Subject>> PutSubject(Guid id, Subject subject)
     {
         if (id != subject.Guid)
         {
@@ -72,12 +75,37 @@ public class SubjectsController : ControllerBase
             }
         }
 
-        return NoContent();
+        return subject;
     }
 
     [HttpPost]
     public async Task<ActionResult<Subject>> PostSubject(Subject subject)
     {
+        var validation = new ModelStateDictionary();
+        if (subject.Name == "")
+            validation.AddModelError("Name", "Name cannot be empty");
+
+        if (subject.Name.Length > 30)
+            validation.AddModelError("Name", "Name length cannot be more the 30 letters");
+
+        if (subject.Name.Length < 5)
+            validation.AddModelError("Name", "Name length cannot be less the 5 letters");
+
+        if (_context.Subjects.Any(s => s.Name == subject.Name))
+            validation.AddModelError("Name", "Subject with the same name already exists");
+
+        if (subject.Key == "")
+            validation.AddModelError("Key", "Key cannot be empty");
+
+        if (subject.Key.Trim().Split(' ').Length > 1)
+            validation.AddModelError("Key", "Key cannot contain multiple words");
+
+        if (_context.Subjects.Any(s => s.Key == subject.Key))
+            validation.AddModelError("Key", "Key with the same key already exists");
+
+        if (validation.ErrorCount > 0)
+            return ValidationProblem(validation);
+
         _context.Subjects.Add(subject);
         await _context.SaveChangesAsync();
 
