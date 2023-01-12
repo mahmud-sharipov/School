@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 
 namespace School.Controllers;
@@ -34,6 +36,7 @@ public class StudentsController : ControllerBase
     }
 
     [HttpPut("{id}")]
+
     public async Task<IActionResult> PutStudent(Guid id, Student student)
     {
         if (id != student.Guid)
@@ -63,13 +66,53 @@ public class StudentsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<Student>> PostStudent(Student student)
+    public async Task<ActionResult<Student>> PostStudent(CreateStrudentDTO studentDto)
     {
+        var validation = new ModelStateDictionary();
+
+        if (studentDto.FirstName == "")
+            validation.AddModelError("FirstName", "FirstName cannot be empty");
+
+        if (studentDto.LastName == "")
+            validation.AddModelError("LastName", "LastName cannot be empty");
+
+        if (studentDto.MiddleName == "")
+            validation.AddModelError("MiddleName", "MiddleName cannot be empty");
+
+        if (studentDto.Address.Length < 10)
+            validation.AddModelError("Address", "Address cannot be less the 10 letters");
+
+        if (studentDto.Phone == "")
+            validation.AddModelError("Phone", "Phone cannot be empty");
+
+        if (studentDto.Phone.Length < 9)
+            validation.AddModelError("Phone", "Phone cannot be less the 9 letters");
+
+        if (!studentDto.Email.Contains("@"))
+            validation.AddModelError("Email", "Please, To create an email, use the example: gmail@gmail.com ");
+
+        if (validation.ErrorCount > 0)
+            return ValidationProblem(validation);
+
+        var student = new Student()
+        {
+            Gender = studentDto.Gender,
+            FirstName = studentDto.FirstName,
+            LastName = studentDto.LastName,
+            MiddleName = studentDto.MiddleName,
+            Address = studentDto.Address,
+            Phone = studentDto.Phone,
+            Birthdate = studentDto.Birthdate,
+            Email = studentDto.Email,
+            GroupGuid = studentDto.GroupGuid,
+        };
+
         _context.Students.Add(student);
         await _context.SaveChangesAsync();
 
-        return CreatedAtAction("GetStudent", new { id = student.Guid }, student);
+        return CreatedAtAction("GetStudent", new { id = student.Guid }, studentDto);
     }
+
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteStudent(Guid id)

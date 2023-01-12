@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client;
 using Newtonsoft.Json.Linq;
+using School.DTO.Group;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace School.Controllers;
@@ -22,8 +23,11 @@ public class GroupsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Group>>> GetGroups()
+    public async Task<ActionResult<IEnumerable<GroupResponseDTO>>> GetGroups()
     {
+        var groups = await _context.Groups.ToListAsync();
+       
+        
         return await _context.Groups.ToListAsync();
     }
 

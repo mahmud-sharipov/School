@@ -15,34 +15,42 @@ public class TeachersController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Teacher>>> GetTeachers()
+    public async Task<ActionResult<IEnumerable<TeacherResponseDTO>>> GetTeachers()
     {
-        return await _context.Teachers.ToListAsync();
+        var entitys = await _context.Teachers.ToListAsync();
+        var result = new List<TeacherResponseDTO>();
+        foreach (var entity in entitys)
+        {
+            result.Add(TeacherResponseDTO.FromEntity(entity));
+        }
+        return result;
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<Teacher>> GetTeacher(Guid id)
+    public async Task<ActionResult<TeacherResponseDTO>> GetTeacher(Guid id)
     {
         var teacher = await _context.Teachers.FindAsync(id);
-
         if (teacher == null)
         {
             return NotFound();
         }
 
-        return teacher;
+        return teacher.ToResponseDto();
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> PutTeacher(Guid id, Teacher teacher)
+    public async Task<ActionResult<TeacherResponseDTO>> PutTeacher(Guid id, TeacherRequestDTO teacherDto)
     {
-        if (id != teacher.Guid)
+        var teacher = await _context.Teachers.FindAsync(id);
+
+        if (teacher == null)
         {
-            return BadRequest();
+            NotFound();
         }
 
-        _context.Entry(teacher).State = EntityState.Modified;
+        teacher.MapFromDTO(teacherDto);
 
+        _context.Teachers.Update(teacher);
         try
         {
             await _context.SaveChangesAsync();
@@ -59,16 +67,18 @@ public class TeachersController : ControllerBase
             }
         }
 
-        return NoContent();
+        return teacher.ToResponseDto();
     }
 
     [HttpPost]
-    public async Task<ActionResult<Teacher>> PostTeacher(Teacher teacher)
+    public async Task<ActionResult<Teacher>> PostTeacher(TeacherRequestDTO teacherDto)
     {
+        var teacher = new Teacher();
+        teacher.MapFromDTO(teacherDto);
         _context.Teachers.Add(teacher);
         await _context.SaveChangesAsync();
 
-        return CreatedAtAction("GetTeacher", new { id = teacher.Guid }, teacher);
+        return CreatedAtAction("GetTeacher", new { id = teacher.Guid }, teacher.ToResponseDto());
     }
 
     [HttpDelete("{id}")]

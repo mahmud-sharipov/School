@@ -18,9 +18,20 @@ public class SubjectsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Subject>>> GetSubjects()
+    public async Task<ActionResult<IEnumerable<SubjectResponseDTO>>> GetSubjects()
     {
-        return await _context.Subjects.ToListAsync();
+        var entities = await _context.Subjects.ToListAsync();
+        var result = new List<SubjectResponseDTO>();
+        foreach (var entity in entities)
+        {
+            result.Add(new SubjectResponseDTO()
+            {
+                Name = entity.Name,
+                Key = entity.Key,
+                Guid = entity.Guid
+            });
+        }
+        return result;
     }
 
     [HttpGet("age-0-20/{age:int:range(0, 20)}")]
@@ -37,7 +48,7 @@ public class SubjectsController : ControllerBase
 
 
     [HttpGet("{id:guid}")]
-    public async Task<ActionResult<Subject>> GetSubject(Guid id)
+    public async Task<ActionResult<SubjectResponseDTO>> GetSubject(Guid id)
     {
         var subject = await _context.Subjects.FindAsync(id);
 
@@ -46,18 +57,26 @@ public class SubjectsController : ControllerBase
             return NotFound();
         }
 
-        return subject;
+        return new SubjectResponseDTO()
+        {
+            Name = subject.Name,
+            Key = subject.Key,
+            Guid = subject.Guid
+        };
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult<Subject>> PutSubject(Guid id, Subject subject)
+    public async Task<ActionResult<SubjectResponseDTO>> PutSubject(Guid id, UpdateSubjectDTO subjectDto)
     {
-        if (id != subject.Guid)
+        var subject = await _context.Subjects.FindAsync(id);
+        if (subject == null)
         {
-            return BadRequest();
+            return NotFound();
         }
+        subject.Name = subjectDto.Name;
+        subject.Key = subjectDto.Key;
 
-        _context.Entry(subject).State = EntityState.Modified;
+        _context.Subjects.Update(subject);
 
         try
         {
@@ -75,41 +94,56 @@ public class SubjectsController : ControllerBase
             }
         }
 
-        return subject;
+        return new SubjectResponseDTO()
+        {
+            Name = subject.Name,
+            Key = subject.Key,
+            Guid = subject.Guid
+        };
     }
 
     [HttpPost]
-    public async Task<ActionResult<Subject>> PostSubject(Subject subject)
+    public async Task<ActionResult<Subject>> PostSubject(CreateSubjectDTO subjectDto)
     {
         var validation = new ModelStateDictionary();
-        if (subject.Name == "")
+        if (subjectDto.Name == "")
             validation.AddModelError("Name", "Name cannot be empty");
 
-        if (subject.Name.Length > 30)
+        if (subjectDto.Name.Length > 30)
             validation.AddModelError("Name", "Name length cannot be more the 30 letters");
 
-        if (subject.Name.Length < 5)
+        if (subjectDto.Name.Length < 5)
             validation.AddModelError("Name", "Name length cannot be less the 5 letters");
 
-        if (_context.Subjects.Any(s => s.Name == subject.Name))
+        if (_context.Subjects.Any(s => s.Name == subjectDto.Name))
             validation.AddModelError("Name", "Subject with the same name already exists");
 
-        if (subject.Key == "")
+        if (subjectDto.Key == "")
             validation.AddModelError("Key", "Key cannot be empty");
 
-        if (subject.Key.Trim().Split(' ').Length > 1)
+        if (subjectDto.Key.Trim().Split(' ').Length > 1)
             validation.AddModelError("Key", "Key cannot contain multiple words");
 
-        if (_context.Subjects.Any(s => s.Key == subject.Key))
+        if (_context.Subjects.Any(s => s.Key == subjectDto.Key))
             validation.AddModelError("Key", "Key with the same key already exists");
 
         if (validation.ErrorCount > 0)
             return ValidationProblem(validation);
 
+        var subject = new Subject()
+        {
+            Key = subjectDto.Key,
+            Name = subjectDto.Name
+        };
         _context.Subjects.Add(subject);
         await _context.SaveChangesAsync();
 
-        return CreatedAtAction("GetSubject", new { id = subject.Guid }, subject);
+        return CreatedAtAction("GetSubject", new { id = subject.Guid }, new SubjectResponseDTO()
+        {
+            Name = subject.Name,
+            Key = subject.Key,
+            Guid = subject.Guid
+        });
     }
 
     [HttpDelete("{id}")]
