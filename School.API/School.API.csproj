@@ -23,4 +23,12 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
   </ItemGroup>
 
+ <ItemGroup>
+   <EditorConfigFiles Remove="C:\Repos\School\School.API\.editorconfig" />
+ </ItemGroup>
+
+ <ItemGroup>
+   <None Include="C:\Repos\School\School.API\.editorconfig" />
+ </ItemGroup>
+
 </Project>
