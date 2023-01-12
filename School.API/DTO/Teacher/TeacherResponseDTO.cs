@@ -1,4 +1,4 @@
-namespace School.API.DTO.Teacher;
+namespace School.API.DTO;
 
 public class TeacherResponseDTO : TeacherRequestDTO
 {

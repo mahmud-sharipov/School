@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using School.API.Data;
-using School.API.DTO.Teacher;
+using School.API.DTO;
 using School.API.Models;
 
 namespace School.API.Controllers;
