@@ -26,9 +26,18 @@ public class GroupsController : ControllerBase
     public async Task<ActionResult<IEnumerable<GroupResponseDTO>>> GetGroups()
     {
         var groups = await _context.Groups.ToListAsync();
-       
-        
-        return await _context.Groups.ToListAsync();
+        var result = new List<GroupResponseDTO>();
+        foreach (var group in groups)
+        {
+            result.Add(new GroupResponseDTO
+            {
+                Division = group.Division,
+                Grade = group.Grade,
+                Guid = group.Guid,
+                TeacherGuid = group.TeacherGuid
+            });
+        }
+        return result;
     }
 
     [HttpGet("conf")]
@@ -38,27 +47,31 @@ public class GroupsController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<Group>> GetGroup(Guid id)
+    public async Task<ActionResult<GroupResponseDTO>> GetGroup(Guid id)
     {
-        var @group = await _context.Groups.FindAsync(id);
-
-        if (@group == null)
+        var group = await _context.Groups.FindAsync(id);
+        if (group == null)
         {
             return NotFound();
         }
 
-        return @group;
+        var entity = new GroupResponseDTO()
+        {
+            Division = group.Division,
+            Grade = group.Grade,
+            Guid = group.Guid,
+            TeacherGuid = group.TeacherGuid
+        };
+
+        return entity;
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> PutGroup(Guid id, Group @group)
+    public async Task<ActionResult<GroupResponseDTO>> PutGroup(Guid id, GroupRequestDTO groupDto)
     {
-        if (id != @group.Guid)
-        {
-            return BadRequest();
-        }
 
-        _context.Entry(@group).State = EntityState.Modified;
+
+        _context.Entry(groupDto).State = EntityState.Modified;
 
         try
         {
