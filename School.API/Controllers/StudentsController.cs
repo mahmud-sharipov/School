@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using School.API.Data;
 using School.API.DTO.Student;
 using School.API.Models;
+using System.Linq.Expressions;
+using System.Net;
 
 namespace School.API.Controllers;
 
@@ -20,34 +22,48 @@ public class StudentsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Student>>> GetStudents()
+    public async Task<ActionResult<IEnumerable<StudentReponseDTO>>> GetStudents()
     {
-        return await _context.Students.ToListAsync();
+        var entitys = await _context.Students.ToListAsync();
+        var result = new List<StudentReponseDTO>();
+        foreach (var entity in entitys)
+        {
+            result.Add(StudentReponseDTO.MapFromDTO(entity));
+        }
+
+        return result;
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<Student>> GetStudent(Guid id)
+    public async Task<ActionResult<StudentReponseDTO>> GetStudent(Guid id)
     {
         var student = await _context.Students.FindAsync(id);
-
         if (student == null)
         {
             return NotFound();
         }
 
-        return student;
+        return StudentReponseDTO.MapFromDTO(student);
     }
 
     [HttpPut("{id}")]
 
-    public async Task<IActionResult> PutStudent(Guid id, Student student)
+    public async Task<ActionResult<StudentReponseDTO>> PutStudent(Guid id, StudentRequestDTO studentDto)
     {
-        if (id != student.Guid)
-        {
-            return BadRequest();
-        }
 
-        _context.Entry(student).State = EntityState.Modified;
+        var student = await _context.Students.FirstOrDefaultAsync(g => g.Guid == id);
+
+        student.FirstName = studentDto.FirstName;
+        student.LastName = studentDto.LastName;
+        student.GroupGuid = studentDto.GroupGuid;
+        student.MiddleName = studentDto.MiddleName;
+        student.Phone = studentDto.Phone;
+        student.Gender = studentDto.Gender;
+        student.Email = studentDto.Email;
+        student.Address = studentDto.Address;
+        student.Birthdate = studentDto.Birthdate;
+
+        _context.Students.Update(student);
 
         try
         {
@@ -65,11 +81,11 @@ public class StudentsController : ControllerBase
             }
         }
 
-        return NoContent();
+        return StudentReponseDTO.MapFromDTO(student);
     }
 
     [HttpPost]
-    public async Task<ActionResult<Student>> PostStudent(CreateStrudentDTO studentDto)
+    public async Task<ActionResult<Student>> PostStudent(StudentRequestDTO studentDto)
     {
         var validation = new ModelStateDictionary();
 
@@ -113,7 +129,7 @@ public class StudentsController : ControllerBase
         _context.Students.Add(student);
         await _context.SaveChangesAsync();
 
-        return CreatedAtAction("GetStudent", new { id = student.Guid }, studentDto);
+        return CreatedAtAction("GetStudent", new { id = student.Guid }, StudentReponseDTO.MapFromDTO(student));
     }
 
 

@@ -2,7 +2,7 @@ using School.API.Models;
 
 namespace School.API.DTO.Student;
 
-public class CreateStrudentDTO
+public class SrudentReponseDTO
 {
     public string LastName { get; set; }
     public string FirstName { get; set; }

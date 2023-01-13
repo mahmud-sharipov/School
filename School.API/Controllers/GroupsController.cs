@@ -76,9 +76,16 @@ public class GroupsController : ControllerBase
     [HttpPut("{id}")]
     public async Task<ActionResult<GroupResponseDTO>> PutGroup(Guid id, GroupRequestDTO groupDto)
     {
+        var group = await _context.Groups.FindAsync(id);
+        if (group == null)
+        {
+            return NotFound();
+        }
+        group.TeacherGuid = groupDto.TeacherGuid;
+        group.Division = groupDto.Division;
+        group.Division = groupDto.Division;
 
-
-        _context.Entry(groupDto).State = EntityState.Modified;
+        _context.Groups.Update(group);
 
         try
         {
@@ -95,7 +102,13 @@ public class GroupsController : ControllerBase
                 throw;
             }
         }
-        return Forbid();
+        return new GroupResponseDTO()
+        {
+            Division = group.Division,
+            Grade = group.Grade,
+            Guid = group.Guid,
+            TeacherGuid = group.TeacherGuid
+        };
     }
 
     [HttpPost]
