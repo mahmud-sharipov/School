@@ -1,8 +1,6 @@
-using School.API.Models;
+namespace School.API.DTO;
 
-namespace School.API.DTO.Student;
-
-public class SrudentReponseDTO
+public class StudentRequestDTO
 {
     public string LastName { get; set; }
     public string FirstName { get; set; }

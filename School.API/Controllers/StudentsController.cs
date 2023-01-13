@@ -1,12 +1,6 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
-using School.API.Data;
-using School.API.DTO.Student;
-using School.API.Models;
-using System.Linq.Expressions;
-using System.Net;
 
 namespace School.API.Controllers;
 
@@ -28,7 +22,7 @@ public class StudentsController : ControllerBase
         var result = new List<StudentReponseDTO>();
         foreach (var entity in entitys)
         {
-            result.Add(StudentReponseDTO.MapFromDTO(entity));
+            result.Add(StudentReponseDTO.FromEntity(entity));
         }
 
         return result;
@@ -43,7 +37,7 @@ public class StudentsController : ControllerBase
             return NotFound();
         }
 
-        return StudentReponseDTO.MapFromDTO(student);
+        return StudentReponseDTO.FromEntity(student);
     }
 
     [HttpPut("{id}")]
@@ -81,7 +75,7 @@ public class StudentsController : ControllerBase
             }
         }
 
-        return StudentReponseDTO.MapFromDTO(student);
+        return StudentReponseDTO.FromEntity(student);
     }
 
     [HttpPost]
@@ -129,7 +123,7 @@ public class StudentsController : ControllerBase
         _context.Students.Add(student);
         await _context.SaveChangesAsync();
 
-        return CreatedAtAction("GetStudent", new { id = student.Guid }, StudentReponseDTO.MapFromDTO(student));
+        return CreatedAtAction("GetStudent", new { id = student.Guid }, StudentReponseDTO.FromEntity(student));
     }
 
 
