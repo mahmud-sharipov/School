@@ -1,5 +1,5 @@
-global using School.Models;
-global using School.Data;
-global using School.Abstractions;
-global using School.DTO;
+global using School.API.Models;
+global using School.API.Data;
+global using School.API.Abstractions;
+global using School.API.DTO;
 

@@ -1,6 +1,6 @@
 ﻿using School.API.Models;
 
-namespace School.API.DTO.Teacher;
+namespace School.API.DTO;
 
 public class TeacherRequestDTO
 {
